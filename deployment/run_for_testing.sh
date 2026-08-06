@@ -4,4 +4,11 @@ export port_run=15001
 
 docker-compose -f deployment/docker-compose.yml up -d
 
-python3 src/main.py
+# Run the backend with the project environment (identical to the Docker image)
+if [ ! -x .venv/bin/python ]; then
+  echo "Project environment not found. Create it with:"
+  echo "  python -m venv .venv && .venv/bin/pip install -r requirements.txt"
+  exit 1
+fi
+
+.venv/bin/python src/main.py

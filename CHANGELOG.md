@@ -5,6 +5,7 @@
 ### Changed
 - Standardized the environment: Python 3.11.7 in Docker (`python:3.11.7-slim`), local (_.python-version_) and tests
 - Locked all dependencies in _requirements.txt_ (generated from a clean Python 3.11.7 virtualenv)
+- Local development uses a minimal `.venv` matching the Docker image (instead of a shared environment)
 - Software version aligned to 0.2.2
 
 ### Fixed
