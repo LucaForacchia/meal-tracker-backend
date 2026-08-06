@@ -48,3 +48,31 @@ def test_meal_insertion(client):
     assert len(meal_count) == 1
     assert meal_count[0][0] == 1
     assert meal_count[0][1] == "DictMeal"
+
+@pytest.mark.acceptance
+def test_meal_counts_who(client):
+    # given: a valid meal form with a specific participant
+    meal = {
+        "date": "2022-02-28",
+        "start_week": "True",
+        "meal_type": "Pranzo",
+        "participants": "Luca",
+        "meal": "DictMeal",
+        "notes": "Notes",
+        "dessert": "Test dessert"
+    }
+    client.post("/meal/", json=meal)
+
+    # when: requiring the count filtered by who
+    response = client.get("/meal/counts?who=L")
+
+    # then: only the meals for Luca are counted
+    assert response.status_code == 200
+    meal_count = loads(response.data)
+    assert meal_count == [[1, "DictMeal"]]
+
+    # when: requiring the count with an invalid who
+    response = client.get("/meal/counts?who=OR%201%3D1--")
+
+    # then: a 400 is returned
+    assert response.status_code == 400

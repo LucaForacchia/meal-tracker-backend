@@ -127,6 +127,36 @@ def test_meal_counts(repository):
     assert meal_counts['TESTMEAL'] == {"name": 'Test meal', "count": 2}
 
 @pytest.mark.repository
+def test_meal_counts_who_filter(repository):
+    # given: meals with different participants stored and counted
+    repository.insert_meal(get_meal(participants="Luca"))
+    repository.update_meal_counter(get_meal(participants="Luca"))
+
+    repository.insert_meal(get_meal(date_meal=datetime(2022,1,2), participants="Gioi"))
+    repository.update_meal_counter(get_meal(date_meal=datetime(2022,1,2), participants="Gioi"))
+
+    repository.insert_meal(get_meal(date_meal=datetime(2022,1,3)))
+    repository.update_meal_counter(get_meal(date_meal=datetime(2022,1,3)))
+
+    # when: requiring the total count
+    meal_counts = repository.get_meals_count()
+    assert meal_counts['TESTMEAL']["count"] == 3
+
+    # when: requiring the count for a specific person
+    meal_counts = repository.get_meals_count("L")
+    assert meal_counts['TESTMEAL']["count"] == 1
+
+    meal_counts = repository.get_meals_count("G")
+    assert meal_counts['TESTMEAL']["count"] == 1
+
+    meal_counts = repository.get_meals_count("both")
+    assert meal_counts['TESTMEAL']["count"] == 1
+
+    # then: an invalid who value is rejected
+    with pytest.raises(ValueError):
+        repository.get_meals_count("OR 1=1--")
+
+@pytest.mark.repository
 def test_meal_names(repository):
     # given: 4 meal inserted into both dbs, 2 of them having same meal_id
     repository.insert_meal(get_meal())

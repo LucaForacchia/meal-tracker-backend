@@ -1,26 +1,43 @@
+## [0.2.1] - 2025-10-06
+### Added
+- Per-person meal counts via `who` query parameter on `GET /meal/counts`
+- Tests for the `who` filter
+
+### Changed
+- Software version aligned to 0.2.1 across service, tests and documentation
+- API version in Swagger UI bumped to 0.2.1
+
+### Fixed
+- Security: meal count query now only accepts a whitelist of count columns (was open to SQL injection via the `who` parameter)
+- Welcome acceptance test expected version (was stale at 1.1.0)
+- Crash in `delete_meal` DEBUG logging (malformed log call with unformatted arguments)
+
+### Removed
+- Unused `weekday` field and related database column (never used in production)
+
 ## [0.2.0] - 2023-09-18
-## Added
+### Added
 - Delete meal functionality
 - Tests extended
 
-## Changed
+### Changed
 - Cleaned update meal counter flow.
 
 ## [0.1.0] - 2022-12-16
-## Added
+### Added
 - Dessert handling
 - First acceptance test
 
-## Removed
+### Removed
 - Get last meal
 
 ## [0.0.3] - 2022-11-10
-## Added
+### Added
 - Get replacement list 
 - Extended meal service tests
 - _pytest.ini_ file
 
-## Fixed
+### Fixed
 - Returning current week also when requested with week number parameter
 
 ## [0.0.2] - 2022-10-07

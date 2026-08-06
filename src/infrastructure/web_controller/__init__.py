@@ -4,7 +4,7 @@ from .meals_controller import api as meals_api
 
 
 api = Api(title='Meal Tracker',
-            version='0.2.0',
+            version='0.2.1',
             description='This service stores the meals for the Foracchia-Manini family',
             default_mediatype='application/json',
             doc="/doc"

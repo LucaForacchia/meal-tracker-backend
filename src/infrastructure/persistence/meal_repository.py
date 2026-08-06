@@ -202,7 +202,7 @@ class MealRepository:
 
             n_meals = c.fetchall()[0][0]
 
-            logging.debug("N_meals:", n_meals)
+            logging.debug("N_meals: %s", n_meals)
 
             assert n_meals == 1
         
@@ -238,18 +238,24 @@ class MealRepository:
 
         return week_number, [self.__serialize_row__(row) for row in c.fetchall()]                
 
-    def get_meals_count(self, filter = None):
+    def get_meals_count(self, who = None):
         c = self.db.cursor()
 
-        c.execute(self.__mysql_query_adapter__('''
-            SELECT meal_id, meal, count_total 
+        allowed_count_fields = ["count_total", "both", "L", "G"]
+        count_field = "count_total" if who is None else who
+        if count_field not in allowed_count_fields:
+            raise ValueError(f"Invalid value for who parameter: {who}")
+
+        c.execute(self.__mysql_query_adapter__(f'''
+            SELECT meal_id, meal, {count_field} 
             FROM meal_counter
-        '''))
+            ORDER BY {count_field} DESC
+        '''
+        ))
 
         return {row[0]: {"name": row[1], "count": row[2]} for row in c.fetchall() if row[1] != ""}
 
     def get_meal_occurrences(self, meal_id):
-    ## Used for what?
         c = self.db.cursor()
 
         c.execute(self.__mysql_query_adapter__('''

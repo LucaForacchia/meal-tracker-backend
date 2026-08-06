@@ -29,7 +29,6 @@ class MealService():
             self.repository.update_meal_counter(meal)
 
     def delete_meal(self, meal):
-        # TODO: test
         logging.info("Requested to delete meal with timestamp %d and participants %s" % (meal.timestamp, meal.participants))
         meal_db = self.repository.get_meal(meal.timestamp, meal.participants)
         
@@ -49,8 +48,8 @@ class MealService():
     def get_weekly_meals(self, week_number):
         return self.repository.get_weekly_meals(week_number)
 
-    def get_meals_count(self):
-        return self.repository.get_meals_count()
+    def get_meals_count(self, who = None):
+        return self.repository.get_meals_count(who)
 
     def get_meal_list(self):
         return self.repository.get_meals_names()

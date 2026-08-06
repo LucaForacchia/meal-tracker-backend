@@ -13,8 +13,8 @@ class VersionModel:
         self.software_status = {
             "name": "Meal Tracker",
             "description": "This service stores the meals for the Foracchia-Manini family",
-            "version": "0.2.0",
-            "status": "In development - Sprint 3"
+            "version": "0.2.1",
+            "status": "Towards a production-ready version, but still in development"
         }
 
     def represent_software_status(self):

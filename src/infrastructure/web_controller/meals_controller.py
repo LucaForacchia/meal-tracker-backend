@@ -133,12 +133,16 @@ class WeeklyMealList(Resource):
 
 @api.route('/counts')
 class MealsCount(Resource):
-    @api.doc('return count of meals')
+    @api.doc('return count of meals', params={'who': 'filter count by person: count_total, both, L, G'})
     @api.response(200, 'Meal', model=meal_model.meal_counts)
     @api.response(400, 'Bad Request', model=error_model.error_view)
     def get(self):
-        logging.info("returning meals count")
-        meal_counts = get_meal_service().get_meals_count()
+        who = request.args.get('who') 
+        logging.info("returning meals count for %s" % (str(who)))
+        try:
+            meal_counts = get_meal_service().get_meals_count(who)
+        except ValueError as err:
+            return (error_model.represent_error(str(err)), 400)
         return meal_model.represent_meal_count(meal_counts)
 
 @api.route('/names')

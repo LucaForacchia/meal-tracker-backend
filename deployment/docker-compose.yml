@@ -1,0 +1,8 @@
+version: '3'
+services:
+  test-webapp:
+    image: "meal-tracker-webapp:0.5.1"
+    ports:
+      - 15002:5002
+    environment:
+      - backend_url=http://172.17.0.1:15001
