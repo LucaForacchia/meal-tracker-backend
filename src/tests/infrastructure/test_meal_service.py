@@ -165,3 +165,27 @@ def test_delete_meal_with_empty_meal_field(service, database):
     c.execute("SELECT * FROM meal_counter")
     meals = c.fetchall()
     assert len(meals) == 0
+
+@pytest.mark.service
+def test_delete_meal_stored_in_different_timezone(service, database):
+    # given: a meal stored with a timestamp computed in a different timezone
+    # (e.g. the production container runs in UTC, while local runs are UTC+2)
+    meal_obj = get_meal()
+    meal_obj.timestamp += 2 * 60 * 60
+    service.store_meal(meal_obj)
+
+    # when: deleting it with a meal whose timestamp is computed in local time
+    service.delete_meal(get_meal())
+
+    # then: the meal is correctly deleted from db
+    (db, db_type) = database
+
+    c = db.cursor()
+    c.execute("SELECT * FROM meals")
+    meals = c.fetchall()
+    assert len(meals) == 0
+
+    # then: the meal counter is decremented accordingly
+    c.execute("SELECT * FROM meal_counter")
+    meals = c.fetchall()
+    assert meals == [('TESTMEAL', 'Test meal', 0, 0, 0, 0)]

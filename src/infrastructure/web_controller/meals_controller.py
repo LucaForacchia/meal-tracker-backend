@@ -4,6 +4,7 @@ from flask_restx import Namespace, Resource, fields
 from datetime import datetime, timezone
 
 from domain.meal import Meal
+from infrastructure.persistence.meal_repository import MealNotFound
 
 from .configuration import get_meal_service
 from .views.error_view import ErrorModel
@@ -108,13 +109,16 @@ class SingleMeal(Resource):
         except InvalidFormError as err:
             return (error_model.represent_error(str(err)), 400)
 
-        get_meal_service().delete_meal(Meal(
-            form["date"], 
-            form["meal_type"], 
-            form["participants"],
-            "ToDelete",
-            ""
-        ))
+        try:
+            get_meal_service().delete_meal(Meal(
+                form["date"], 
+                form["meal_type"], 
+                form["participants"],
+                "ToDelete",
+                ""
+            ))
+        except MealNotFound as err:
+            return (error_model.represent_error(str(err)), 404)
 
         return "", 204
 

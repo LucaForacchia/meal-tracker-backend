@@ -29,8 +29,8 @@ class MealService():
             self.repository.update_meal_counter(meal)
 
     def delete_meal(self, meal):
-        logging.info("Requested to delete meal with timestamp %d and participants %s" % (meal.timestamp, meal.participants))
-        meal_db = self.repository.get_meal(meal.timestamp, meal.participants)
+        logging.info("Requested to delete meal %s %s %s" % (meal.date, meal.meal_type, meal.participants))
+        meal_db = self.repository.get_meal(meal.date, meal.meal_type, meal.participants)
         
         logging.info("Selected meal to delete: %s" % (str(meal_db.__dict__)))
         # CHECK IF MEAL_ID HAS TO BE REPLACED, mirroring store_meal:
