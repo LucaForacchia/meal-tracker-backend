@@ -143,3 +143,25 @@ def test_delete_meal(service, database):
     meals = c.fetchall()
     assert len(meals) == 1
     assert meals[0] == ('TESTDELETE', 'TestDelete', 1, 0, 1, 0)
+
+@pytest.mark.service
+def test_delete_meal_with_empty_meal_field(service, database):
+    # given: a meal with an empty meal field (only notes) stored:
+    meal_obj = get_meal(meal="", notes="Solo appunti")
+    service.store_meal(meal_obj)
+
+    # when: requiring to delete the meal
+    service.delete_meal(meal_obj)
+
+    # then: the meal is correctly deleted from db
+    (db, db_type) = database
+
+    c = db.cursor()
+    c.execute("SELECT * FROM meals")
+    meals = c.fetchall()
+    assert len(meals) == 0
+
+    # then: the meal counter is not touched
+    c.execute("SELECT * FROM meal_counter")
+    meals = c.fetchall()
+    assert len(meals) == 0

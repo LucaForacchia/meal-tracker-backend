@@ -116,7 +116,7 @@ class SingleMeal(Resource):
             ""
         ))
 
-        return 204
+        return "", 204
 
 @api.route('/week')
 class WeeklyMealList(Resource):

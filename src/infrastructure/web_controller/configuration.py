@@ -46,6 +46,9 @@ def db_connect(config, db_type="sqlite", path="/tmp/database.sqlite"):
                                          password=config["db_pass"])
 
     elif db_type=="sqlite":
+        db_dir = os.path.dirname(path)
+        if db_dir:
+            os.makedirs(db_dir, exist_ok=True)
         db = sqlite3.connect(path)
 
     else:

@@ -1,20 +1,45 @@
 # MealTracker Backend
 
-version 0.2.1
+version 0.2.2
 
 # How to use
 
+## Environment
+
+The whole project runs on a single locked environment, identical in every context:
+
+- **Python 3.11.7** everywhere:
+  - Docker image: `python:3.11.7-slim` (see _Dockerfile_)
+  - Local development: pinned by the _.python-version_ file (pyenv)
+  - Tests: run with the same interpreter (see below)
+- **Dependencies**: fully pinned in _requirements.txt_ (locked from a clean Python 3.11.7 virtualenv). Docker, local and tests install exactly the same versions.
+
 ## Setup
 
-Please use python 3.10+ (see the _Dockerfile_) and install dependencies using pip3
+Create the virtual environment with the same interpreter used everywhere:
 
-    > pip3 install -r requirements.txt
+    > pyenv install 3.11.7                     # if not already installed
+    > pyenv virtualenv 3.11.7 mealtracker-env
+    > pyenv activate mealtracker-env
+    > pip install -r requirements.txt
+
+The _.python-version_ file pins 3.11.7 for the repository.
 
 ## Launch the server
 
 Start the server from command line with:
 
     > python src/main.py
+
+## Run the tests
+
+Run the full test suite with the same environment:
+
+    > python -m pytest
+
+The acceptance tests can also be run through _acceptance-test.sh_ (it sets a temporary sqlite database):
+
+    > PYTEST_COMMAND="python -m pytest" bash acceptance-test.sh
 
 ## Configuration
 
@@ -46,7 +71,7 @@ Any other value returns a 400 Bad Request.
 
 ### Docker image
 
-Build the image with the version tag (0.2.1):
+Build the image with the version tag (0.2.2):
 
     > bash script_docker_build.sh
 

@@ -76,3 +76,34 @@ def test_meal_counts_who(client):
 
     # then: a 400 is returned
     assert response.status_code == 400
+
+@pytest.mark.acceptance
+def test_delete_meal_with_empty_meal_field(client, database):
+    # given: a meal with an empty meal field (only notes) stored
+    meal = {
+        "date": "2022-02-28",
+        "start_week": "True",
+        "meal_type": "Cena",
+        "participants": "Luca",
+        "meal": "",
+        "notes": "Solo appunti",
+        "dessert": None
+    }
+    response = client.post("/meal/", json=meal)
+    assert response.status_code == 201
+
+    # when: deleting the meal from the UI
+    response = client.delete("/meal/single", json={
+        "date": "2022-02-28",
+        "meal_type": "Cena",
+        "participants": "Luca"
+    })
+
+    # then: the meal is deleted
+    assert response.status_code == 204
+
+    # then: no meal remains in the db
+    (db, db_type) = database
+    c = db.cursor()
+    c.execute("SELECT * FROM meals")
+    assert len(c.fetchall()) == 0
