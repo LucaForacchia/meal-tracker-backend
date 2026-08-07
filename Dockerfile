@@ -1,4 +1,4 @@
-FROM python:3.10-slim
+FROM python:3.11.7-slim
 
 COPY ./requirements.txt /meal-tracker/requirements.txt
 

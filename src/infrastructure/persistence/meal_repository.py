@@ -217,14 +217,18 @@ class MealRepository:
 
         self.db.commit()
 
-    def get_meal(self, timestamp, participants):
+    def get_meal(self, date, meal_type, participants):
         c = self.db.cursor()
         c.execute(self.__mysql_query_adapter__(self.__get_select_query__() + '''
-                WHERE timestamp = ?
+                WHERE date = ?
+                AND type = ?
                 AND participants = ?
-            '''), (timestamp, participants))
+            '''), (date, meal_type, participants))
 
-        return [self.__serialize_row__(row) for row in c.fetchall()][0]
+        meals = [self.__serialize_row__(row) for row in c.fetchall()]
+        if len(meals) == 0:
+            raise MealNotFound(f"No meal found for date {date}, meal type {meal_type}, participants {participants}")
+        return meals[0]
 
     def get_weekly_meals(self, week_number = None):
         c = self.db.cursor()

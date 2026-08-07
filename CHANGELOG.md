@@ -1,3 +1,20 @@
+## [0.2.2] - 2026-08-06
+### Added
+- Tests reproducing the deletion of a meal with an empty `Meal` field (service and acceptance level)
+
+### Changed
+- Standardized the environment: Python 3.11.7 in Docker (`python:3.11.7-slim`), local (_.python-version_) and tests
+- Locked all dependencies in _requirements.txt_ (generated from a clean Python 3.11.7 virtualenv)
+- Local development uses a minimal `.venv` matching the Docker image (instead of a shared environment)
+- Software version aligned to 0.2.2
+
+### Fixed
+- Deleting a meal could fail with 500 when the stored timestamp was computed in a different timezone than the request (e.g. production container in UTC vs local runs): the meal is now looked up by its natural key (date, meal type, participants)
+- Deleting a meal with an empty `Meal` field (only notes) failed with 500: the meal counter was downscaled even for meals never tracked in `meal_counter`
+- `delete_meal` used the request meal id instead of the stored one when applying id replacements
+- `DELETE /meal/single` now returns the documented 204 (was returning 200 with the status code as body), and 404 when the meal does not exist
+- Default sqlite database path now creates the `db/` directory when missing
+
 ## [0.2.1] - 2025-10-06
 ### Added
 - Per-person meal counts via `who` query parameter on `GET /meal/counts`
