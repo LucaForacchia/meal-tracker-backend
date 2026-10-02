@@ -1,3 +1,3 @@
-export version=0.2.2
+export version=0.3.0
 
 docker build -t meal-tracker:$version .

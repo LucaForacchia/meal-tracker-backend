@@ -3,11 +3,14 @@ import sqlite3
 from mysql.connector.errors import IntegrityError as MySqlIntegrityError
 import logging
 from uuid import uuid4
-from datetime import datetime
+from datetime import datetime, date
 from collections import Counter
 
 from domain.meal import Meal
 from domain.meal_occurrences import MealOccurrences
+
+OUT_OF_TRACKED_PERIOD = "Data fuori periodo tracciato"
+LAST_WEEK_MAX_DAYS = 14
 
 class MealRepository:
     def __init__(self, db, db_type="sqlite"):
@@ -146,6 +149,40 @@ class MealRepository:
         elif len(rows) == 1:
             return week_number, (rows[0][0], rows[0][0] + 30 * 24 * 3600)
         return week_number, (rows[1][0], rows[0][0])
+
+    def get_week_number_by_date(self, date_iso):
+        # A week N starts at the meal with start_week = N and lasts until the next start.
+        # The week of a date is the last week started on or before that date: a boundary
+        # day (week starting with a Cena) belongs to the new week.
+        # Dates are compared as ISO strings (YYYY-MM-DD), independent of the server timezone.
+        # Dates after the last week start are accepted only within LAST_WEEK_MAX_DAYS.
+        c = self.db.cursor()
+
+        c.execute(self.__mysql_query_adapter__('''
+            SELECT
+                start_week, date
+            FROM meals
+            WHERE start_week >= 1 AND date <= ?
+            ORDER BY start_week DESC
+            LIMIT 1
+            '''), (date_iso,))
+
+        row = c.fetchone()
+        if row is None:
+            raise WeekNotFound(OUT_OF_TRACKED_PERIOD)
+
+        week_number, week_start = row
+
+        c.execute('''
+            SELECT MAX(start_week) FROM meals
+            ''')
+
+        if week_number == c.fetchone()[0]:
+            days_from_start = (date.fromisoformat(date_iso) - date.fromisoformat(week_start)).days
+            if days_from_start >= LAST_WEEK_MAX_DAYS:
+                raise WeekNotFound(OUT_OF_TRACKED_PERIOD)
+
+        return week_number
 
     def __get_select_query__(self):
         return '''
@@ -289,4 +326,8 @@ class DuplicateMeal(Exception):
     pass
 
 class MealNotFound(KeyError):
+    pass
+
+# Not a KeyError: str(KeyError) quotes the message, and this one is shown to the user
+class WeekNotFound(Exception):
     pass

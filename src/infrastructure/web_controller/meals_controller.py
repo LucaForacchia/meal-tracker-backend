@@ -1,10 +1,10 @@
 import logging
 from flask import request
 from flask_restx import Namespace, Resource, fields
-from datetime import datetime, timezone
+from datetime import datetime, date, timezone
 
 from domain.meal import Meal
-from infrastructure.persistence.meal_repository import MealNotFound
+from infrastructure.persistence.meal_repository import MealNotFound, WeekNotFound
 
 from .configuration import get_meal_service
 from .views.error_view import ErrorModel
@@ -124,13 +124,32 @@ class SingleMeal(Resource):
 
 @api.route('/week')
 class WeeklyMealList(Resource):
-    @api.doc('return weekly meal list')
+    @api.doc('return weekly meal list', params={
+        'week-number': 'week to return (default: last week)',
+        'date': 'return the week containing this date (YYYY-MM-DD); not combinable with week-number'})
     @api.response(200, 'Meal', model=meal_model.weekly_meals)
     @api.response(400, 'Bad Request', model=error_model.error_view)
-    @api.response(404, 'Not Found', model=error_model.error_view)
+    @api.response(404, 'Date out of tracked period', model=error_model.error_view)
     def get(self):
         logging.info("Requested week meals")
-        week_number = int(request.args["week-number"]) if "week-number" in request.args else None
+        if "date" in request.args:
+            if "week-number" in request.args:
+                return (error_model.represent_error("Parameters date and week-number are mutually exclusive"), 400)
+            try:
+                meal_date = date.fromisoformat(request.args["date"])
+            except ValueError as err:
+                return (error_model.represent_error("Invalid value for date parameter, expected YYYY-MM-DD: %s" % str(err)), 400)
+
+            try:
+                week_number, meals_list = get_meal_service().get_weekly_meals_by_date(meal_date)
+            except WeekNotFound as err:
+                return (error_model.represent_error(str(err)), 404)
+            return meal_model.represent_meal_week(week_number, meals_list)
+
+        try:
+            week_number = int(request.args["week-number"]) if "week-number" in request.args else None
+        except ValueError:
+            return (error_model.represent_error("Invalid value for week-number parameter, expected an integer"), 400)
 
         week_number, meals_list = get_meal_service().get_weekly_meals(week_number)
         return meal_model.represent_meal_week(week_number, meals_list)

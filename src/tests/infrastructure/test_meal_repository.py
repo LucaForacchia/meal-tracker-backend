@@ -3,7 +3,7 @@ import pytest
 
 from domain.meal import Meal
 
-from infrastructure.persistence.meal_repository import MealRepository
+from infrastructure.persistence.meal_repository import MealRepository, WeekNotFound
 
 from tests.utils import database, clean_db, get_meal
 
@@ -208,3 +208,55 @@ def test_meal_counter_table(repository, database):
     meals = c.fetchall()
     assert len(meals) == 1
     assert meals[0] == ('TESTMEAL', 'Test meal', 2, 1, 1, 0)
+
+def insert_weeks(repository, week_starts):
+    # week_starts: list of (week_number, date, meal_type) of the meals starting a week
+    for week_number, date_meal, meal_type in week_starts:
+        meal_obj = get_meal(date_meal=date_meal, meal_type=meal_type, start_week=True)
+        meal_obj.week_number = week_number
+        repository.insert_meal(meal_obj)
+
+WEEKS = [(1, datetime(2022,1,1), "Pranzo"), (2, datetime(2022,1,8), "Cena"), (3, datetime(2022,1,15), "Pranzo")]
+
+@pytest.mark.repository
+@pytest.mark.parametrize("date_iso,expected_week", [
+    ("2022-01-01", 1),  # first day tracked, week 1 included
+    ("2022-01-05", 1),
+    ("2022-01-07", 1),
+    ("2022-01-08", 2),  # boundary day (week starting with a Cena) goes to the new week
+    ("2022-01-14", 2),
+    ("2022-01-15", 3),
+    ("2022-01-28", 3),  # last week, 13 days from its start
+])
+def test_get_week_number_by_date(repository, date_iso, expected_week):
+    # given: three tracked weeks
+    insert_weeks(repository, WEEKS)
+    repository.insert_meal(get_meal(date_meal=datetime(2022,1,5), meal_type="Cena"))
+
+    # when: resolving the week of a date
+    # then: the week started last on or before the date is returned
+    assert repository.get_week_number_by_date(date_iso) == expected_week
+
+@pytest.mark.repository
+@pytest.mark.parametrize("date_iso", [
+    "2021-12-31",  # before the first week
+    "2022-01-29",  # last week, 14 days from its start
+    "2023-01-01",
+])
+def test_get_week_number_by_date_out_of_period(repository, date_iso):
+    # given: three tracked weeks
+    insert_weeks(repository, WEEKS)
+
+    # when: resolving a date outside the tracked period
+    # then: WeekNotFound is raised with the user message
+    with pytest.raises(WeekNotFound) as err:
+        repository.get_week_number_by_date(date_iso)
+    assert str(err.value) == "Data fuori periodo tracciato"
+
+@pytest.mark.repository
+def test_get_week_number_by_date_empty_db(repository):
+    # given: no meals stored
+    # when: resolving a date
+    # then: WeekNotFound is raised
+    with pytest.raises(WeekNotFound):
+        repository.get_week_number_by_date("2022-01-01")

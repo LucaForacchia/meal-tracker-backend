@@ -189,3 +189,27 @@ def test_delete_meal_stored_in_different_timezone(service, database):
     c.execute("SELECT * FROM meal_counter")
     meals = c.fetchall()
     assert meals == [('TESTMEAL', 'Test meal', 0, 0, 0, 0)]
+@pytest.mark.service
+def test_get_weekly_meals_by_date(service):
+    # given: two tracked weeks, the second starting with a Cena
+    for week_number, date_meal, meal_type in [(1, datetime(2022,1,1), "Pranzo"), (2, datetime(2022,1,8), "Cena")]:
+        meal_obj = get_meal(date_meal=date_meal, meal_type=meal_type, start_week=True)
+        meal_obj.week_number = week_number
+        service.repository.insert_meal(meal_obj)
+    service.store_meal(get_meal(date_meal=datetime(2022,1,3), meal="Week one"))
+    service.store_meal(get_meal(date_meal=datetime(2022,1,8), meal="Week one boundary"))
+    service.store_meal(get_meal(date_meal=datetime(2022,1,10), meal="Week two"))
+
+    # when: requesting the week containing a date
+    week_number, meals = service.get_weekly_meals_by_date(date(2022,1,5))
+
+    # then: the meals of that week are returned
+    assert week_number == 1
+    assert [m.meal for m in meals] == ["Test meal", "Week one", "Week one boundary"]
+
+    # when: requesting the boundary day
+    week_number, meals = service.get_weekly_meals_by_date(date(2022,1,8))
+
+    # then: the new week is returned
+    assert week_number == 2
+    assert [m.meal for m in meals] == ["Test meal", "Week two"]

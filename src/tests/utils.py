@@ -35,6 +35,8 @@ def database():
 
     if db_type=="sqlite":
         path = get_environ("meal_db_path", default="/tmp/pytest.db")
+        # the app under test (acceptance) must use the same db, not its default ./db/meals.db
+        os.environ["meal_db_path"] = path
         if os.path.exists(path):
             os.remove(path)
 

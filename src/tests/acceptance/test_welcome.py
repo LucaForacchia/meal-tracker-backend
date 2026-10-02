@@ -16,5 +16,5 @@ def test_welcome(client):
     message = loads(response.data)
     assert message["name"] == "Meal Tracker"
     assert message["description"] == "This service stores the meals for the Foracchia-Manini family"
-    assert message["version"] == "0.2.2"
+    assert message["version"] == "0.3.0"
     assert message["status"] == "Towards a production-ready version, but still in development"
