@@ -73,8 +73,8 @@ Build the image with the version tag (0.2.2):
 
 ### Local debug with the frontend
 
-`deployment/` contains a local setup to test the interaction with the frontend webapp:
+`deployment/` contains a local setup to test the interaction with the frontend webapp. It is a **test-only** environment (manual and acceptance tests): it is not used in production, which lives in the separate _meal-tracker-deployment_ folder.
 
     > bash deployment/run_for_testing.sh
 
-It starts the frontend container (docker-compose) and runs the backend (with the project `.venv`) on port 15001.
+It starts the frontend container (docker-compose) and runs the backend (with the project `.venv`) on port 15001, so that a new backend version can be tried against a ready frontend. The webapp image tag in _deployment/docker-compose.yml_ is pinned: adjust it to the frontend version you want to test against.
