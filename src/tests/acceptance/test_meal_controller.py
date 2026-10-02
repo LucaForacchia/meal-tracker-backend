@@ -2,7 +2,6 @@ import pytest
 from json import loads
 from datetime import datetime
 
-from .fixtures import client, app, database
 
 @pytest.mark.acceptance
 def test_meal_insertion(client):
@@ -147,3 +146,65 @@ def test_delete_meal_not_found(client):
 
     # then: a 404 is returned
     assert response.status_code == 404
+def insert_week_start(client, date_meal):
+    response = client.post("/meal/", json={
+        "date": date_meal,
+        "start_week": "True",
+        "meal_type": "Pranzo",
+        "participants": "Entrambi",
+        "meal": "Start " + date_meal,
+        "notes": ""
+    })
+    assert response.status_code == 201
+
+@pytest.mark.acceptance
+def test_week_by_date(client, database):
+    # given: the service is up (this creates the tables)
+    client.get("/meal/counts")
+
+    # given: two tracked weeks
+    (db, db_type) = database
+    c = db.cursor()
+    c.execute('''INSERT INTO meals (date, timestamp, start_week, type, participants, meal, meal_id, dessert, notes)
+        VALUES ('2022-02-21', 1645441200, 1, 'Pranzo', 'Entrambi', 'First', 'FIRST', NULL, ''),
+               ('2022-02-28', 1646046000, 2, 'Pranzo', 'Entrambi', 'Second', 'SECOND', NULL, '')''')
+    db.commit()
+
+    # when: requesting the week containing a date
+    response = client.get("/meal/week?date=2022-02-23")
+
+    # then: that week is returned
+    assert response.status_code == 200
+    message = loads(response.data)
+    assert message["week_number"] == 1
+    assert message["meals"][0]["meal"] == "First"
+
+    # when: requesting the start day of the last week
+    response = client.get("/meal/week?date=2022-02-28")
+
+    # then: the last week is returned
+    assert response.status_code == 200
+    assert loads(response.data)["week_number"] == 2
+
+@pytest.mark.acceptance
+@pytest.mark.parametrize("query", ["date=2022-02-20", "date=2022-03-14"])
+def test_week_by_date_out_of_period(client, query):
+    # given: a tracked week
+    insert_week_start(client, "2022-02-28")
+
+    # when: requesting a date before the first week or too far after the last one
+    response = client.get("/meal/week?" + query)
+
+    # then: 404 with a user message
+    assert response.status_code == 404
+    assert loads(response.data)["error_message"] == "Data fuori periodo tracciato"
+
+@pytest.mark.acceptance
+@pytest.mark.parametrize("query", ["date=2022-02-28&week-number=1", "date=2022-13-01", "date=yesterday", "week-number=abc"])
+def test_week_bad_request(client, query):
+    # when: requesting a week with invalid parameters
+    response = client.get("/meal/week?" + query)
+
+    # then: 400
+    assert response.status_code == 400
+    assert "error_message" in loads(response.data)

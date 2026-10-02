@@ -3,7 +3,6 @@ import pytest
 
 from datetime import datetime
 from domain.meal import Meal
-from tests.utils import database, clean_db
 
 @pytest.mark.domain
 def test_meal_creation():

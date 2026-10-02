@@ -14,10 +14,9 @@ if [ -z ${PYTEST_COMMAND+x} ]; then
 fi
 
 # export TEST_USING_SQLITE=true
-# set the environment
+# set the environment (the sqlite db is a temporary one per test, see docs/tests.md)
 echo "USING SQLITE"
 export db_type=sqlite
-export meal_db_path=/tmp/acceptance-test.db
 
 #run tests
 $PYTEST_COMMAND -m "acceptance"

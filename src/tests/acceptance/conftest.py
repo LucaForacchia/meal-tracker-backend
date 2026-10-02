@@ -4,7 +4,7 @@ import logging
 from flask import Flask
 from werkzeug.middleware.proxy_fix import ProxyFix
 
-from ..utils import database, clean_db
+from tests.utils import clean_db
 
 from infrastructure.web_controller import api
 

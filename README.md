@@ -1,6 +1,6 @@
 # MealTracker Backend
 
-version 0.2.2
+version 0.3.0
 
 # How to use
 
@@ -33,7 +33,9 @@ Run the full test suite with the same environment:
 
     > .venv/bin/python -m pytest
 
-The acceptance tests can also be run through _acceptance-test.sh_ (it sets a temporary sqlite database):
+Each test runs on its own temporary database: see _docs/tests.md_ for levels, markers, fixtures and how to write tests.
+
+The acceptance tests can also be run through _acceptance-test.sh_:
 
     > PYTEST_COMMAND=".venv/bin/python -m pytest" bash acceptance-test.sh
 
@@ -63,18 +65,33 @@ Software configuration is driven by env variables:
 
 Any other value returns a 400 Bad Request.
 
+### Weekly meals
+
+`GET /meal/week` returns the meals of a week (and its `week_number`):
+
+- no parameter: last week
+- `week-number=N`: week N
+- `date=YYYY-MM-DD`: the week containing that date
+
+Weeks are not stored as such: week N starts at the meal flagged with `start_week = N` and lasts until the next week start. A date belongs to the last week started on or before it, so a boundary day (week starting with a Cena) belongs to the new week. Dates are compared on the stored ISO `date`, independently of the server timezone. A date after the start of the last week is accepted only within 14 days from that start.
+
+Errors:
+
+- `date` together with `week-number`, invalid `date` or non-integer `week-number`: 400 Bad Request
+- `date` before the first week or more than 14 days after the start of the last week: 404 with `error_message` "Data fuori periodo tracciato"
+
 ## Development
 
 ### Docker image
 
-Build the image with the version tag (0.2.2):
+Build the image with the version tag (0.3.0):
 
     > bash script_docker_build.sh
 
 ### Local debug with the frontend
 
-`deployment/` contains a local setup to test the interaction with the frontend webapp:
+`deployment/` contains a local setup to test the interaction with the frontend webapp. It is a **test-only** environment (manual and acceptance tests): it is not used in production, which lives in the separate _meal-tracker-deployment_ folder.
 
     > bash deployment/run_for_testing.sh
 
-It starts the frontend container (docker-compose) and runs the backend (with the project `.venv`) on port 15001.
+It starts the frontend container (docker-compose) and runs the backend (with the project `.venv`) on port 15001, so that a new backend version can be tried against a ready frontend. The webapp image tag in _deployment/docker-compose.yml_ is pinned: adjust it to the frontend version you want to test against.

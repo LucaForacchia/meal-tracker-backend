@@ -49,6 +49,10 @@ class MealService():
     def get_weekly_meals(self, week_number):
         return self.repository.get_weekly_meals(week_number)
 
+    def get_weekly_meals_by_date(self, meal_date):
+        week_number = self.repository.get_week_number_by_date(meal_date.isoformat())
+        return self.repository.get_weekly_meals(week_number)
+
     def get_meals_count(self, who = None):
         return self.repository.get_meals_count(who)
 

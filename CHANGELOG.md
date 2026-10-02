@@ -1,3 +1,18 @@
+## [0.3.0] - 2026-10-02
+### Added
+- `date` query parameter on `GET /meal/week`: returns the week containing the given date (YYYY-MM-DD), 404 "Data fuori periodo tracciato" when the date is before the first week or more than 14 days after the start of the last one
+- Repository, service and acceptance tests for the week lookup by date
+
+### Changed
+- Software version aligned to 0.3.0
+- Test fixtures moved to `conftest.py` files (auto-discovered, no more explicit imports): each test gets its own sqlite database in the pytest `tmp_path`, and `meal_db_path` is set through `monkeypatch` so the app under test uses it
+- _acceptance-test.sh_ no longer sets `meal_db_path`
+- Test documentation in _docs/tests.md_
+
+### Fixed
+- `GET /meal/week` with a non-integer `week-number` now returns 400 (was 500)
+- Acceptance tests used the app default database (`./db/meals.db`) instead of the test database: they now share the database of the test fixture
+
 ## [0.2.2] - 2026-08-06
 ### Added
 - Tests reproducing the deletion of a meal with an empty `Meal` field (service and acceptance level)
