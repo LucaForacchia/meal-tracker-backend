@@ -33,7 +33,9 @@ Run the full test suite with the same environment:
 
     > .venv/bin/python -m pytest
 
-The acceptance tests can also be run through _acceptance-test.sh_ (it sets a temporary sqlite database):
+Each test runs on its own temporary database: see _docs/tests.md_ for levels, markers, fixtures and how to write tests.
+
+The acceptance tests can also be run through _acceptance-test.sh_:
 
     > PYTEST_COMMAND=".venv/bin/python -m pytest" bash acceptance-test.sh
 

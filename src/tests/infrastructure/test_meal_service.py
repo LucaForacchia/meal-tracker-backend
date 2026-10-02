@@ -6,7 +6,7 @@ from domain.meal import Meal
 from infrastructure.services.meal_service import MealService
 from infrastructure.persistence.meal_repository import MealRepository
 
-from tests.utils import database, clean_db, get_meal
+from tests.utils import clean_db, get_meal
 
 @pytest.fixture
 def service(database):

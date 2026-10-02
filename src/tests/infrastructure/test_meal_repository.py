@@ -5,7 +5,7 @@ from domain.meal import Meal
 
 from infrastructure.persistence.meal_repository import MealRepository, WeekNotFound
 
-from tests.utils import database, clean_db, get_meal
+from tests.utils import clean_db, get_meal
 
 @pytest.fixture
 def repository(database):

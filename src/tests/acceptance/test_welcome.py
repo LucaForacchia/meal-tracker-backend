@@ -1,7 +1,6 @@
 import pytest
 from json import loads
 
-from .fixtures import client, app, database
 
 @pytest.mark.acceptance
 def test_welcome(client):

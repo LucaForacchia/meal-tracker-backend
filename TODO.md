@@ -5,8 +5,10 @@
 - Carefully test meal_counter, before allowing replacement exposure
 - Implement "DELETE" replacement, restoring counting on meal_counter table
 
+## Weeks
+ - `store_meal` computes the new week number with `get_last_week_timestamp`, which ignores week 1 (`start_week > 1`): on an empty db the second week gets number 1 again. Not an issue in production (weeks are already > 1), but to be fixed with a test
+
 ## Tests
- - ? Create a stable environment to run acceptance test ?
  - ? Acceptance test ?
  - Ensure current implementation with unit test
 

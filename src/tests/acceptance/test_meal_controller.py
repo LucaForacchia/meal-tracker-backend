@@ -2,7 +2,6 @@ import pytest
 from json import loads
 from datetime import datetime
 
-from .fixtures import client, app, database
 
 @pytest.mark.acceptance
 def test_meal_insertion(client):
